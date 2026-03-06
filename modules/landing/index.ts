@@ -1,0 +1,12 @@
+export { CursorFollower } from "./cursor-follower";
+export { SmoothScrollProvider } from "./smooth-scroll-provider";
+export { LandingNavbar } from "./navbar";
+export { Hero } from "./hero";
+export { HowItWorks } from "./how-it-works";
+export { FeaturesBento } from "./features-bento";
+export { Metrics } from "./metrics";
+export { Pricing } from "./pricing";
+export { DemoPreview } from "./demo-preview";
+export { FAQAndCTA } from "./faq-cta";
+export { SignupCTA } from "./signup-cta";
+export { LandingFooter } from "./footer";

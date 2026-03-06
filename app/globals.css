@@ -1,0 +1,628 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  /* ── Core surfaces ── */
+  --background:        #FFFFFF;
+  --surface:           #F7F7F5;
+  --surface-hover:     #EFEFED;
+  --surface-active:    #E9E9E6;
+
+  /* ── Foreground ── */
+  --foreground:        #1A1A1A;
+  --foreground-secondary: #6B7280;
+  --foreground-tertiary:  #9CA3AF;
+  --foreground-placeholder: #C4C4C4;
+
+  /* ── Borders ── */
+  --border:            #E5E7EB;
+  --border-strong:     #D1D5DB;
+
+  /* ── Semantic colors ── */
+  --blue:              #2382E2;
+  --blue-light:        #EBF4FF;
+  --red:               #E03E3E;
+  --red-light:         #FFF0F0;
+  --green:             #0F9D58;
+  --green-light:       #ECFDF5;
+  --yellow:            #DFAB01;
+  --yellow-light:      #FFFBEB;
+  --orange:            #D9730D;
+  --orange-light:      #FAEBDD;
+
+  /* ── Shadcn/UI compatibility mappings ── */
+  --card:              #FFFFFF;
+  --card-foreground:   #1A1A1A;
+  --popover:           #FFFFFF;
+  --popover-foreground: #1A1A1A;
+  --primary:           #1A1A1A;
+  --primary-foreground: #FFFFFF;
+  --secondary:         #F7F7F5;
+  --secondary-foreground: #1A1A1A;
+  --muted:             #F7F7F5;
+  --muted-foreground:  #9CA3AF;
+  --accent:            #EFEFED;
+  --accent-foreground: #1A1A1A;
+  --destructive:       #E03E3E;
+  --destructive-foreground: #FFFFFF;
+  --input:             #E5E7EB;
+  --ring:              #1A1A1A;
+  --radius:            0.375rem;
+
+  /* ── Chart (for shadcn/recharts) ── */
+  --chart-1: #2382E2;
+  --chart-2: #0F9D58;
+  --chart-3: #DFAB01;
+  --chart-4: #D9730D;
+  --chart-5: #E03E3E;
+
+  /* ── Sidebar ── */
+  --sidebar:           #F7F7F5;
+  --sidebar-foreground: #1A1A1A;
+  --sidebar-primary:   #1A1A1A;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent:    #EFEFED;
+  --sidebar-accent-foreground: #1A1A1A;
+  --sidebar-border:    #E5E7EB;
+  --sidebar-ring:      #1A1A1A;
+
+  /* ── Typography ── */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+
+  /* ── Spacing (4px base) ── */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* ── Shadows — paper-light only ── */
+  --shadow-sm:  0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md:  0 1px 4px rgba(0,0,0,0.08);
+  --shadow-lg:  0 4px 12px rgba(0,0,0,0.08);
+  --shadow-menu: 0 4px 16px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06);
+}
+
+.dark {
+  --background:        #191919;
+  --surface:           #1F1F1F;
+  --surface-hover:     #272727;
+  --surface-active:    #2E2E2E;
+
+  --foreground:        #E8E8E6;
+  --foreground-secondary: #9B9B9B;
+  --foreground-tertiary:  #6B6B6B;
+  --foreground-placeholder: #484848;
+
+  --border:            #2E2E2E;
+  --border-strong:     #3D3D3D;
+
+  --blue:              #4BA3F5;
+  --blue-light:        #1A2D42;
+  --red:               #F47067;
+  --red-light:         #2D1414;
+  --green:             #4CC38A;
+  --green-light:       #122517;
+  --yellow:            #F5C842;
+  --yellow-light:      #2A2010;
+  --orange:            #F5A623;
+  --orange-light:      #2A1C0A;
+
+  --card:              #1F1F1F;
+  --card-foreground:   #E8E8E6;
+  --popover:           #252525;
+  --popover-foreground: #E8E8E6;
+  --primary:           #E8E8E6;
+  --primary-foreground: #191919;
+  --secondary:         #272727;
+  --secondary-foreground: #E8E8E6;
+  --muted:             #272727;
+  --muted-foreground:  #6B6B6B;
+  --accent:            #2E2E2E;
+  --accent-foreground: #E8E8E6;
+  --destructive:       #F47067;
+  --destructive-foreground: #191919;
+  --input:             #2E2E2E;
+  --ring:              #E8E8E6;
+
+  --chart-1: #4BA3F5;
+  --chart-2: #4CC38A;
+  --chart-3: #F5C842;
+  --chart-4: #F5A623;
+  --chart-5: #F47067;
+
+  --sidebar:           #1F1F1F;
+  --sidebar-foreground: #E8E8E6;
+  --sidebar-primary:   #E8E8E6;
+  --sidebar-primary-foreground: #191919;
+  --sidebar-accent:    #272727;
+  --sidebar-accent-foreground: #E8E8E6;
+  --sidebar-border:    #2E2E2E;
+  --sidebar-ring:      #E8E8E6;
+
+  --shadow-sm:   0 1px 2px rgba(0,0,0,0.3);
+  --shadow-md:   0 1px 4px rgba(0,0,0,0.4);
+  --shadow-lg:   0 4px 12px rgba(0,0,0,0.4);
+  --shadow-menu: 0 4px 16px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06);
+}
+
+@theme inline {
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --color-background:        var(--background);
+  --color-foreground:        var(--foreground);
+  --color-card:              var(--card);
+  --color-card-foreground:   var(--card-foreground);
+  --color-popover:           var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary:           var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary:         var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted:             var(--muted);
+  --color-muted-foreground:   var(--muted-foreground);
+  --color-accent:            var(--accent);
+  --color-accent-foreground:  var(--accent-foreground);
+  --color-destructive:       var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border:            var(--border);
+  --color-input:             var(--input);
+  --color-ring:              var(--ring);
+  --radius-sm:  calc(var(--radius) - 2px);
+  --radius-md:  var(--radius);
+  --radius-lg:  calc(var(--radius) + 2px);
+  --radius-xl:  calc(var(--radius) + 6px);
+  --color-sidebar:           var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary:   var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent:    var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border:    var(--sidebar-border);
+  --color-sidebar-ring:     var(--sidebar-ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    box-sizing: border-box;
+  }
+
+  html {
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--foreground);
+    background: var(--background);
+  }
+
+  /* ── Scrollbars — thin Notion-style ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: var(--foreground-tertiary); }
+
+  /* ── Selection ── */
+  ::selection {
+    background: #C5D9F1;
+    color: var(--foreground);
+  }
+  .dark ::selection { background: #2D4A6B; }
+
+  /* ── Focus — no heavy rings ── */
+  :focus-visible {
+    outline: 2px solid var(--blue);
+    outline-offset: 2px;
+    border-radius: var(--radius);
+  }
+
+  /* ── Headings ── */
+  h1 { font-size: 32px; font-weight: 700; line-height: 1.2; letter-spacing: -0.03em; }
+  h2 { font-size: 24px; font-weight: 700; line-height: 1.3; letter-spacing: -0.02em; }
+  h3 { font-size: 20px; font-weight: 600; line-height: 1.4; letter-spacing: -0.01em; }
+  h4 { font-size: 16px; font-weight: 600; line-height: 1.4; letter-spacing: -0.01em; }
+  h5, h6 { font-size: 13px; font-weight: 600; line-height: 1.5; }
+
+  /* ── Links ── */
+  a {
+    color: var(--blue);
+    text-decoration: none;
+    transition: color 120ms ease;
+  }
+  a:hover { color: var(--foreground); }
+
+  /* ── Code inline ── */
+  code:not(pre code) {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1px 5px;
+    color: var(--red);
+  }
+
+  /* ── Pre/code blocks ── */
+  pre {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    overflow-x: auto;
+    line-height: 1.7;
+  }
+
+  /* ── HR ── */
+  hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 16px 0;
+  }
+}
+
+@layer components {
+
+  /* ── Notion-style button base ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1;
+    border-radius: 6px;
+    padding: 6px 12px;
+    height: 30px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+    white-space: nowrap;
+    user-select: none;
+  }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-primary {
+    background: var(--foreground);
+    color: var(--background);
+    border-color: var(--foreground);
+  }
+  .btn-primary:hover { background: #2D2D2D; }
+  .dark .btn-primary:hover { background: #D0D0CE; }
+
+  .btn-secondary {
+    background: var(--surface);
+    color: var(--foreground);
+    border-color: var(--border);
+  }
+  .btn-secondary:hover { background: var(--surface-hover); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--foreground-secondary);
+    border-color: transparent;
+  }
+  .btn-ghost:hover {
+    background: var(--surface-hover);
+    color: var(--foreground);
+  }
+
+  /* ── Notion-style input ── */
+  .notion-input {
+    font-size: 13px;
+    font-family: var(--font-sans);
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 10px;
+    color: var(--foreground);
+    width: 100%;
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+    outline: none;
+  }
+  .notion-input::placeholder { color: var(--foreground-placeholder); }
+  .notion-input:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 2px rgba(35, 130, 226, 0.15);
+  }
+
+  /* ── Notion-style menu / dropdown ── */
+  .notion-menu {
+    background: var(--popover);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: var(--shadow-menu);
+    padding: 4px;
+    min-width: 200px;
+  }
+
+  .notion-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--foreground);
+    padding: 0 8px;
+    height: 30px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 80ms ease;
+    user-select: none;
+  }
+  .notion-menu-item:hover { background: var(--surface-hover); }
+  .notion-menu-item.destructive { color: var(--red); }
+  .notion-menu-item.destructive:hover { background: var(--red-light); }
+
+  .notion-menu-separator {
+    height: 1px;
+    background: var(--border);
+    margin: 4px 0;
+  }
+
+  .notion-menu-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: var(--foreground-tertiary);
+    padding: 6px 8px 2px;
+    text-transform: uppercase;
+  }
+
+  /* ── Sidebar item ── */
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--foreground-secondary);
+    padding: 0 8px;
+    height: 28px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 80ms ease, color 80ms ease;
+    user-select: none;
+  }
+  .sidebar-item:hover {
+    background: var(--surface-hover);
+    color: var(--foreground);
+  }
+  .sidebar-item.active {
+    background: var(--surface-active);
+    color: var(--foreground);
+    font-weight: 500;
+  }
+
+  /* ── Section label (EXPLORER, etc.) ── */
+  .sidebar-section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--foreground-tertiary);
+    text-transform: uppercase;
+    padding: 16px 12px 4px;
+    user-select: none;
+  }
+
+  /* ── Editor tab ── */
+  .editor-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--foreground-secondary);
+    padding: 0 16px;
+    height: 36px;
+    border-right: 1px solid var(--border);
+    cursor: pointer;
+    transition: color 100ms ease, background 100ms ease;
+    white-space: nowrap;
+    user-select: none;
+    position: relative;
+  }
+  .editor-tab:hover { color: var(--foreground); background: var(--surface); }
+  .editor-tab.active {
+    color: var(--foreground);
+    font-weight: 500;
+    background: var(--background);
+  }
+  .editor-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--foreground);
+  }
+  .editor-tab .tab-close {
+    opacity: 0;
+    font-size: 14px;
+    color: var(--foreground-tertiary);
+    line-height: 1;
+    margin-left: 2px;
+    transition: opacity 80ms ease;
+  }
+  .editor-tab:hover .tab-close { opacity: 1; }
+
+  /* ── AI token ink effect ── */
+  @keyframes tokenInk {
+    from {
+      opacity: 0;
+      filter: blur(2px);
+    }
+    to {
+      opacity: 1;
+      filter: blur(0px);
+    }
+  }
+  .token-ink {
+    animation: tokenInk 80ms ease forwards;
+  }
+
+  /* ── Status bar ── */
+  .status-bar {
+    height: 24px;
+    background: var(--foreground);
+    color: rgba(255,255,255,0.65);
+    font-size: 11px;
+    font-family: var(--font-sans);
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    gap: 12px;
+    user-select: none;
+  }
+  .dark .status-bar { background: #111111; }
+  .status-bar-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+  }
+  .status-bar-item:hover { color: rgba(255,255,255,0.9); cursor: pointer; }
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #4CC38A;
+    display: inline-block;
+  }
+  .status-dot.offline { background: #9CA3AF; }
+  .status-dot.error   { background: #F47067; }
+
+  /* ── AI message blocks ── */
+  .ai-message {
+    padding: 12px 16px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--foreground);
+    border-bottom: 1px solid var(--border);
+  }
+  .ai-message.user { background: var(--surface); }
+  .ai-message.assistant { background: var(--background); }
+  .ai-message-role {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--foreground-tertiary);
+    margin-bottom: 6px;
+  }
+
+  /* ── Notion-style badge/tag ── */
+  .notion-tag {
+    display: inline-flex;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 7px;
+    border-radius: 3px;
+    background: var(--surface);
+    color: var(--foreground-secondary);
+    border: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .notion-tag.blue   { background: var(--blue-light);   color: var(--blue);   border-color: transparent; }
+  .notion-tag.green  { background: var(--green-light);  color: var(--green);  border-color: transparent; }
+  .notion-tag.red    { background: var(--red-light);    color: var(--red);    border-color: transparent; }
+  .notion-tag.yellow { background: var(--yellow-light); color: var(--yellow); border-color: transparent; }
+  .notion-tag.orange { background: var(--orange-light); color: var(--orange); border-color: transparent; }
+
+  /* ── Notion-style card ── */
+  .notion-card {
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    transition: box-shadow 150ms ease, border-color 150ms ease;
+  }
+  .notion-card:hover {
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-md);
+  }
+
+  /* ── Divider with label ── */
+  .divider-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--foreground-tertiary);
+  }
+  .divider-label::before,
+  .divider-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── Tooltip ── */
+  .notion-tooltip {
+    font-size: 12px;
+    background: var(--foreground);
+    color: var(--background);
+    padding: 4px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    box-shadow: var(--shadow-md);
+    pointer-events: none;
+  }
+
+  /* ── Transitions — everything is 120ms max ── */
+  button, a, input, textarea, [role="button"] {
+    transition-duration: 120ms;
+    transition-timing-function: ease;
+  }
+}
+
+/* ── Compatibility: existing --vibe-* usage maps to new design tokens ── */
+:root {
+  --vibe-bg:           var(--background);
+  --vibe-surface:      var(--surface);
+  --vibe-primary:      var(--blue);
+  --vibe-secondary:   var(--blue);
+  --vibe-text:        var(--foreground);
+  --vibe-text-muted:  var(--foreground-secondary);
+  --vibe-border:      var(--border);
+  --vibe-radius:      var(--radius);
+  --vibe-shadow:      var(--shadow-md);
+  --vibe-shadow-hover: var(--shadow-lg);
+  --vibe-glow:        var(--blue);
+  --font-display:     var(--font-sans);
+  --font-body:        var(--font-sans);
+}
+.dark {
+  --vibe-bg:           var(--background);
+  --vibe-surface:     var(--surface);
+  --vibe-primary:     var(--blue);
+  --vibe-text:        var(--foreground);
+  --vibe-text-muted:  var(--foreground-secondary);
+  --vibe-border:      var(--border);
+}
