@@ -102,7 +102,9 @@ const WebContainerPreview = ({
             setLoadingState((prev) => ({ ...prev, starting: true }));
             return;
           }
-        } catch (error) {}
+        } catch {
+          // No package.json yet (or read failed) — run full mount flow below.
+        }
 
         // Step-1 transform data
         setLoadingState((prev) => ({ ...prev, transforming: true }));
