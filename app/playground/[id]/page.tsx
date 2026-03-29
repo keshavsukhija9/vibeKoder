@@ -87,7 +87,7 @@ const MainPlaygroundPage = () => {
   const { playgroundData, templateData, isLoading, error, saveTemplateData } =
     usePlayground(id);
 
-    const aiSuggestions = useAISuggestions();
+    const aiSuggestions = useAISuggestions(typeof id === "string" ? id : "");
 
   const {
     setTemplateData,
@@ -309,13 +309,20 @@ const MainPlaygroundPage = () => {
 
   const handleIndexForAI = useCallback(async () => {
     if (!templateData) return;
+    if (typeof id !== "string" || !id.trim()) {
+      toast.error("Playground not ready");
+      return;
+    }
     setIndexingRAG(true);
     try {
       const files = flattenTemplateToFiles(templateData);
       const res = await fetch("/api/rag/index", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ files }),
+        body: JSON.stringify({
+          playgroundId: typeof id === "string" ? id : "",
+          files,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || data.error || "Index failed");
@@ -325,7 +332,7 @@ const MainPlaygroundPage = () => {
     } finally {
       setIndexingRAG(false);
     }
-  }, [templateData]);
+  }, [templateData, id]);
 
   const handleCheckStructure = useCallback(() => {
     if (!templateData) return;

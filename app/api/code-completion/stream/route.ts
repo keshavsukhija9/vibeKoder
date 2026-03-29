@@ -6,6 +6,7 @@
 
 import { type NextRequest, NextResponse } from "next/server";
 import { searchCodebase } from "@/lib/rag/server";
+import { requirePlaygroundForRag } from "@/lib/rag/require-playground";
 import { getOllamaUrl, OLLAMA_GENERATE_PATH } from "@/lib/ollama";
 import { analyzeCodeContext, buildPrompt } from "@/lib/ai/completion";
 import { jsonError, readJsonBody } from "@/lib/api-errors";
@@ -17,6 +18,8 @@ interface StreamCompletionRequest {
   suggestionType: string;
   fileName?: string;
   codebaseContext?: { filePath: string; content: string; score?: number }[];
+  /** Required for server-side RAG when codebaseContext is not sent. */
+  playgroundId?: string;
 }
 
 const OLLAMA_HINT =
@@ -28,7 +31,8 @@ export async function POST(request: NextRequest) {
     if (parsed.errorResponse) return parsed.errorResponse;
     const body = parsed.body;
 
-    const { fileContent, cursorLine, cursorColumn, suggestionType, fileName, codebaseContext } = body;
+    const { fileContent, cursorLine, cursorColumn, suggestionType, fileName, codebaseContext, playgroundId } =
+      body;
 
     if (!fileContent || cursorLine < 0 || cursorColumn < 0 || !suggestionType) {
       return jsonError(400, "Invalid input parameters");
@@ -37,15 +41,24 @@ export async function POST(request: NextRequest) {
     const context = analyzeCodeContext(fileContent, cursorLine, cursorColumn, fileName);
 
     let ragContext = codebaseContext;
-    if (!ragContext?.length) {
-      try {
-        const query = [context.beforeContext.slice(-500), context.currentLine, context.afterContext.slice(0, 300)].filter(Boolean).join("\n");
-        const ragChunks = await searchCodebase(query, 5);
-        if (ragChunks.length > 0) {
-          ragContext = ragChunks.map((c) => ({ filePath: c.filePath, content: c.content, score: c.score }));
+    if (!ragContext?.length && typeof playgroundId === "string" && playgroundId.trim()) {
+      const auth = await requirePlaygroundForRag(playgroundId.trim());
+      if (auth.ok) {
+        try {
+          const query = [context.beforeContext.slice(-500), context.currentLine, context.afterContext.slice(0, 300)]
+            .filter(Boolean)
+            .join("\n");
+          const ragChunks = await searchCodebase(auth.playgroundId, query, 5);
+          if (ragChunks.length > 0) {
+            ragContext = ragChunks.map((c) => ({
+              filePath: c.filePath,
+              content: c.content,
+              score: c.score,
+            }));
+          }
+        } catch {
+          // RAG optional; continue without codebase context
         }
-      } catch {
-        // RAG optional; continue without codebase context
       }
     }
 

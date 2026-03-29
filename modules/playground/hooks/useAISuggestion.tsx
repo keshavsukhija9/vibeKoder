@@ -29,7 +29,7 @@ interface UseAISuggestionsReturn extends AISuggestionsState {
     clearSuggestion: (editor: any) => void;
 }
 
-export const useAISuggestions = (): UseAISuggestionsReturn => {
+export const useAISuggestions = (playgroundId: string): UseAISuggestionsReturn => {
     const [state, setState] = useState<AISuggestionsState>({
         suggestion: null,
         isLoading: false,
@@ -85,11 +85,15 @@ export const useAISuggestions = (): UseAISuggestionsReturn => {
                         const contextStart = Math.max(0, cursorLineIndex - 5);
                         const contextEnd = Math.min(lines.length, cursorLineIndex + 6);
                         const querySnippet = lines.slice(contextStart, contextEnd).join("\n").trim().slice(0, 500);
-                        if (querySnippet) {
+                        if (querySnippet && playgroundId.trim()) {
                             const ragRes = await fetch("/api/rag/search", {
                                 method: "POST",
                                 headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({ query: querySnippet, topK: 6 }),
+                                body: JSON.stringify({
+                                    query: querySnippet,
+                                    topK: 6,
+                                    playgroundId: playgroundId.trim(),
+                                }),
                             }).catch(() => null);
                             if (ragRes?.ok) {
                                 const ragData = await ragRes.json();
@@ -105,7 +109,10 @@ export const useAISuggestions = (): UseAISuggestionsReturn => {
                             const res = await fetch("/api/code-completion/stream", {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify(payload),
+                            body: JSON.stringify({
+                                ...payload,
+                                playgroundId: playgroundId.trim() || undefined,
+                            }),
                         });
                         if (!res.ok || !res.body) {
                             const errData = await res.json().catch(() => ({}));
@@ -141,7 +148,10 @@ export const useAISuggestions = (): UseAISuggestionsReturn => {
                     const response = await fetch("/api/code-completion", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(payload),
+                        body: JSON.stringify({
+                            ...payload,
+                            playgroundId: playgroundId.trim() || undefined,
+                        }),
                     });
                     if (!response.ok) {
                         throw new Error(`API responded with status ${response.status}`);
@@ -173,7 +183,7 @@ export const useAISuggestions = (): UseAISuggestionsReturn => {
                 return newState
             })
         }, 400);
-    }, [])
+    }, [playgroundId])
 
 
     const acceptSuggestion = useCallback((editor: any, monaco: any) => {

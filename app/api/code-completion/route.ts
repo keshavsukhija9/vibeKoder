@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { searchCodebase } from "@/lib/rag/server";
+import { requirePlaygroundForRag } from "@/lib/rag/require-playground";
 
 /** Optional RAG-retrieved context (PRD FR-RAG-04). When provided, injected into LLM prompt. */
 interface CodebaseContextChunk {
@@ -16,6 +17,8 @@ interface CodeSuggestionRequest {
   fileName?: string;
   /** Optional: project-specific code chunks from RAG (lib/rag). */
   codebaseContext?: CodebaseContextChunk[];
+  /** When set, server can load RAG chunks for this playground if codebaseContext is empty. */
+  playgroundId?: string;
 }
 
 interface CodeContext {
@@ -35,7 +38,7 @@ export async function POST(request: NextRequest) {
   try {
     const body: CodeSuggestionRequest = await request.json();
 
-    const { fileContent, cursorLine, cursorColumn, suggestionType, fileName, codebaseContext } =
+    const { fileContent, cursorLine, cursorColumn, suggestionType, fileName, codebaseContext, playgroundId } =
       body;
 
     // Validate input
@@ -55,15 +58,24 @@ export async function POST(request: NextRequest) {
 
     // RAG: retrieve project context from LanceDB if not provided (FR-RAG-04)
     let ragContext = codebaseContext;
-    if (!ragContext?.length) {
-      try {
-        const query = [context.beforeContext.slice(-500), context.currentLine, context.afterContext.slice(0, 300)].filter(Boolean).join("\n");
-        const ragChunks = await searchCodebase(query, 5);
-        if (ragChunks.length > 0) {
-          ragContext = ragChunks.map((c) => ({ filePath: c.filePath, content: c.content, score: c.score }));
+    if (!ragContext?.length && typeof playgroundId === "string" && playgroundId.trim()) {
+      const auth = await requirePlaygroundForRag(playgroundId.trim());
+      if (auth.ok) {
+        try {
+          const query = [context.beforeContext.slice(-500), context.currentLine, context.afterContext.slice(0, 300)]
+            .filter(Boolean)
+            .join("\n");
+          const ragChunks = await searchCodebase(auth.playgroundId, query, 5);
+          if (ragChunks.length > 0) {
+            ragContext = ragChunks.map((c) => ({
+              filePath: c.filePath,
+              content: c.content,
+              score: c.score,
+            }));
+          }
+        } catch {
+          // RAG optional; continue without codebase context
         }
-      } catch {
-        // RAG optional; continue without codebase context
       }
     }
 

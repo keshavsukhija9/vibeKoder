@@ -1,6 +1,6 @@
 /**
  * LanceDB RAG – server-only (Node). Used by API routes.
- * PRD FR-RAG-01–06; NFR-PERF-01 target < 100ms retrieval.
+ * Indexes are isolated per `playgroundId` (separate table + hash manifest).
  */
 
 import path from "path";
@@ -9,10 +9,9 @@ import fs from "fs";
 import { chunkFiles } from "./chunk";
 import { getEmbeddings } from "./embed";
 import type { RAGSearchResult } from "./types";
+import { playgroundHashesPath, playgroundTableName } from "./playground-scope";
 
-const TABLE_NAME = "codebase";
 const DEFAULT_TOP_K = 6;
-const HASHES_PATH = ".vibecoder/hashes.json";
 
 function getDbPath(): string {
   const base = process.env.VIBECODER_LANCEDB_PATH || path.join(process.cwd(), ".vibecoder", "lancedb");
@@ -24,9 +23,10 @@ export function hashContent(content: string): string {
 }
 
 type HashEntry = { hash: string; updatedAt: number };
-function loadHashes(): Record<string, HashEntry> {
+
+function loadHashes(playgroundId: string): Record<string, HashEntry> {
   try {
-    const p = path.join(process.cwd(), HASHES_PATH);
+    const p = playgroundHashesPath(playgroundId, process.cwd());
     const raw = fs.readFileSync(p, "utf-8");
     return JSON.parse(raw) as Record<string, HashEntry>;
   } catch {
@@ -34,10 +34,11 @@ function loadHashes(): Record<string, HashEntry> {
   }
 }
 
-function saveHashes(entries: Record<string, HashEntry>): void {
+function saveHashes(playgroundId: string, entries: Record<string, HashEntry>): void {
   const dir = path.join(process.cwd(), ".vibecoder");
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(path.join(process.cwd(), HASHES_PATH), JSON.stringify(entries, null, 0), "utf-8");
+  const p = playgroundHashesPath(playgroundId, process.cwd());
+  fs.writeFileSync(p, JSON.stringify(entries, null, 0), "utf-8");
 }
 
 export type LanceDbRow = {
@@ -56,18 +57,26 @@ async function getDb() {
   return lancedb.connect(dbPath);
 }
 
-export async function tableExists(): Promise<boolean> {
+function tableName(playgroundId: string): string {
+  return playgroundTableName(playgroundId);
+}
+
+export async function tableExists(playgroundId: string): Promise<boolean> {
   try {
     const db = await getDb();
-    await db.openTable(TABLE_NAME);
+    await db.openTable(tableName(playgroundId));
     return true;
   } catch {
     return false;
   }
 }
 
-export async function indexFiles(files: { path: string; content: string }[]): Promise<{ chunksIndexed: number }> {
-  const hashes = loadHashes();
+export async function indexFiles(
+  playgroundId: string,
+  files: { path: string; content: string }[]
+): Promise<{ chunksIndexed: number }> {
+  const name = tableName(playgroundId);
+  const hashes = loadHashes(playgroundId);
   const now = Date.now();
   const toEmbed: { path: string; content: string }[] = [];
   const unchangedPaths = new Set<string>();
@@ -90,8 +99,11 @@ export async function indexFiles(files: { path: string; content: string }[]): Pr
   const db = await getDb();
   let keptRows: LanceDbRow[] = [];
   try {
-    const table = await db.openTable(TABLE_NAME);
-    const all = await table.query().select(["id", "filePath", "content", "vector", "startLine", "endLine", "language"]).toArray();
+    const table = await db.openTable(name);
+    const all = await table
+      .query()
+      .select(["id", "filePath", "content", "vector", "startLine", "endLine", "language"])
+      .toArray();
     const allRows = all as unknown as LanceDbRow[];
     keptRows = allRows.filter((r) => unchangedPaths.has(r.filePath));
   } catch {
@@ -119,43 +131,42 @@ export async function indexFiles(files: { path: string; content: string }[]): Pr
   const rows = [...keptRows, ...newRows];
   if (rows.length === 0) {
     try {
-      await db.dropTable(TABLE_NAME);
+      await db.dropTable(name);
     } catch {
       //
     }
-    saveHashes(hashes);
+    saveHashes(playgroundId, hashes);
     return { chunksIndexed: 0 };
   }
 
   try {
-    await db.dropTable(TABLE_NAME);
+    await db.dropTable(name);
   } catch {
     //
   }
-  await db.createTable(TABLE_NAME, rows);
-  saveHashes(hashes);
+  await db.createTable(name, rows);
+  saveHashes(playgroundId, hashes);
   return { chunksIndexed: rows.length };
 }
 
 export async function searchCodebase(
+  playgroundId: string,
   query: string,
   topK = DEFAULT_TOP_K
 ): Promise<RAGSearchResult[]> {
   await import("@lancedb/lancedb");
   const db = await getDb();
+  const name = tableName(playgroundId);
   let table;
   try {
-    table = await db.openTable(TABLE_NAME);
+    table = await db.openTable(name);
   } catch {
     return [];
   }
 
   const emb = await import("./embed").then((m) => m.getEmbedding(query));
   const vector = new Float32Array(emb);
-  const results = await table
-    .vectorSearch(vector)
-    .limit(topK)
-    .toArray();
+  const results = await table.vectorSearch(vector).limit(topK).toArray();
 
   const withDistance = results as (LanceDbRow & { _distance?: number })[];
   return withDistance.map((row) => ({
@@ -169,20 +180,28 @@ export async function searchCodebase(
   }));
 }
 
-export async function updateFileInIndex(filePath: string, content: string): Promise<void> {
+export async function updateFileInIndex(
+  playgroundId: string,
+  filePath: string,
+  content: string
+): Promise<void> {
   const db = await getDb();
+  const name = tableName(playgroundId);
   let table;
   try {
-    table = await db.openTable(TABLE_NAME);
+    table = await db.openTable(name);
   } catch {
     return;
   }
-  const all = await table.query().select(["id", "filePath", "content", "vector", "startLine", "endLine", "language"]).toArray();
+  const all = await table
+    .query()
+    .select(["id", "filePath", "content", "vector", "startLine", "endLine", "language"])
+    .toArray();
   const rows = all as unknown as LanceDbRow[];
   const toKeep = rows.filter((r) => r.filePath !== filePath);
   const chunks = chunkFiles([{ path: filePath, content }]);
   if (chunks.length === 0 && toKeep.length === 0) {
-    await db.dropTable(TABLE_NAME).catch(() => {});
+    await db.dropTable(name).catch(() => {});
     return;
   }
   if (chunks.length > 0) {
@@ -199,8 +218,8 @@ export async function updateFileInIndex(filePath: string, content: string): Prom
     }));
     toKeep.push(...newRows);
   }
-  await db.dropTable(TABLE_NAME).catch(() => {});
+  await db.dropTable(name).catch(() => {});
   if (toKeep.length > 0) {
-    await db.createTable(TABLE_NAME, toKeep);
+    await db.createTable(name, toKeep);
   }
 }
