@@ -4,11 +4,13 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getStructuralRisks } from "@/lib/ast";
+import { readJsonBody } from "@/lib/api-errors";
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const files = body.files as { path: string; content: string }[] | undefined;
+    const parsed = await readJsonBody<{ files?: unknown }>(request);
+    if (parsed.errorResponse) return parsed.errorResponse;
+    const files = parsed.body.files as { path: string; content: string }[] | undefined;
     if (!Array.isArray(files) || files.length === 0) {
       return NextResponse.json(
         { error: "Missing or invalid 'files' array" },

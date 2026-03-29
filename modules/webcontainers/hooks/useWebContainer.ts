@@ -3,10 +3,11 @@ import { WebContainer } from "@webcontainer/api";
 import { TemplateFolder } from "@/modules/playground/lib/path-to-json";
 
 interface UseWebContainerProps {
-  templateData: TemplateFolder;
+  /** Present after template loads; hook does not require it to boot the container. */
+  templateData: TemplateFolder | null;
 }
 
-interface UseWebContaierReturn {
+export interface UseWebContainerReturn {
   serverUrl: string | null;
   isLoading: boolean;
   error: string | null;
@@ -15,9 +16,7 @@ interface UseWebContaierReturn {
   destory: () => void;
 }
 
-export const useWebContainer = ({
-  templateData,
-}: UseWebContainerProps): UseWebContaierReturn => {
+export const useWebContainer = (_props: UseWebContainerProps): UseWebContainerReturn => {
   const [serverUrl, setServerUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);

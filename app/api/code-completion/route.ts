@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { searchCodebase } from "@/lib/rag/server";
 import { requirePlaygroundForRag } from "@/lib/rag/require-playground";
+import { readJsonBody } from "@/lib/api-errors";
 
 /** Optional RAG-retrieved context (PRD FR-RAG-04). When provided, injected into LLM prompt. */
 interface CodebaseContextChunk {
@@ -36,7 +37,9 @@ interface CodeContext {
 
 export async function POST(request: NextRequest) {
   try {
-    const body: CodeSuggestionRequest = await request.json();
+    const parsed = await readJsonBody<CodeSuggestionRequest>(request);
+    if (parsed.errorResponse) return parsed.errorResponse;
+    const body = parsed.body;
 
     const { fileContent, cursorLine, cursorColumn, suggestionType, fileName, codebaseContext, playgroundId } =
       body;

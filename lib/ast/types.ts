@@ -1,8 +1,7 @@
 /**
  * VibeCoder AST / Codebase Intelligence – PRD §5.5, §7.4
  *
- * Types for dependency graph and structural analysis.
- * Implementation is planned; these types define the contract.
+ * Types for dependency graph and structural analysis (`lib/ast/*`, worker, `/api/ast/analyze`).
  */
 
 export interface DependencyNode {
