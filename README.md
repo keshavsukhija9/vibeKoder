@@ -134,6 +134,7 @@ See **[How to use](docs/HOW-TO-USE.md)** for a full walkthrough.
 
 ## 📚 Documentation
 
+- **[Contributing](CONTRIBUTING.md)** – Setup, commands, where code lives, test expectations.
 - **[How to use](docs/HOW-TO-USE.md)** – Step-by-step: try the editor (no sign-in), run projects, use AI, save with an account.
 - **[VibeCoder PRD](docs/PRD-VibeCoder.md)** – Project requirements, scope, functional/non-functional requirements, milestones, and acceptance criteria.
 - **[Architecture](docs/ARCHITECTURE.md)** – System architecture (WebContainers, RAG, Monaco), tech stack, and directory map.
