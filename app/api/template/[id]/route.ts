@@ -5,9 +5,11 @@ import {
 import { templatePaths } from "@/lib/template";
 import { DEMO_TEMPLATE } from "@/lib/demo-template";
 import { getDb } from "@/lib/db";
+import { verifyToken, getCookieName } from "@/lib/auth/jwt";
 import path from "path";
 import fs from "fs/promises";
 import { NextRequest } from "next/server";
+import { cookies } from "next/headers";
 
 function validateJsonStructure(data: unknown): boolean {
   try {
@@ -29,10 +31,17 @@ export async function GET(
     return Response.json({ error: "Missing playground ID" }, { status: 400 });
   }
 
+  const cookieStore = await cookies();
+  const token = cookieStore.get(getCookieName())?.value;
+  const session = token ? await verifyToken(token) : null;
+  if (!session?.sub) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const db = getDb();
   const row = db.prepare(
-    "SELECT template FROM playgrounds WHERE id = ?"
-  ).get(id) as { template: string } | undefined;
+    "SELECT template FROM playgrounds WHERE id = ? AND user_id = ?"
+  ).get(id, session.sub) as { template: string } | undefined;
 
   if (!row) {
     return Response.json({ error: "Playground not found" }, { status: 404 });

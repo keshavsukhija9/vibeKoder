@@ -1,5 +1,5 @@
 {
-  "name": "vibecoder",
+  "name": "vibekoder",
   "version": "1.0.0",
   "description": "VibeCoder – Local-AI Integrated Development Environment. Browser-native IDE with WebContainers, LanceDB RAG, and Monaco Editor.",
   "private": true,
@@ -59,7 +59,7 @@
     "lucide-react": "^0.534.0",
     "monaco-editor": "^0.52.2",
     "monacopilot": "^1.2.7",
-    "next": "15.4.5",
+    "next": "^15.5.12",
     "next-themes": "^0.4.6",
     "react": "19.1.0",
     "react-day-picker": "^9.8.1",
@@ -98,6 +98,7 @@
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "jsdom": "^25.0.1",
+    "knip": "^5.85.0",
     "tailwindcss": "^4",
     "ts-jest": "^29.4.6",
     "tsx": "^4.21.0",

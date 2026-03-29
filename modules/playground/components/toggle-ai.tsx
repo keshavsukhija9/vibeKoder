@@ -51,19 +51,19 @@ const ToggleAI: React.FC<ToggleAIProps> = ({
 
   return (
     <>
-      <DropdownMenu>
+      <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <Button 
+            type="button"
             size="sm" 
             variant={isEnabled ? "default" : "outline"}
             className={cn(
-              "relative gap-2 h-8 px-3 text-sm font-medium transition-all duration-200",
+              "relative gap-2 h-8 px-3 text-sm font-medium transition-colors duration-150",
               isEnabled 
                 ? "bg-zinc-900 hover:bg-zinc-800 text-zinc-50 border-zinc-800 dark:bg-zinc-50 dark:hover:bg-zinc-200 dark:text-zinc-900 dark:border-zinc-200" 
                 : "bg-background hover:bg-accent text-foreground border-border",
               suggestionLoading && "opacity-75"
             )}
-            onClick={(e) => e.preventDefault()}
           >
             {suggestionLoading ? (
               <Loader2 className="h-4 w-4 animate-spin" />

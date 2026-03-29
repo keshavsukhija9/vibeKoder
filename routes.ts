@@ -1,43 +1,14 @@
 /**
- * An Array of routes that are accessible to the public
- * These routes do not require authentication
- * @type {string[]}
+ * Routes that do not require authentication (middleware allows without session).
  */
-
-export const publicRoutes: string[] = [
-    "/",
-    "/dashboard",
-    "/playground/demo",
-]
+export const publicRoutes: string[] = ["/", "/dashboard", "/playground/demo"];
 
 /**
- * An Array of routes that are protected
- * These routes require authentication
- * @type {string[]}
+ * Auth pages (sign-in, etc.): reachable when logged out; logged-in users are redirected away.
  */
+export const authRoutes: string[] = ["/auth/sign-in"];
 
-export const protectedRoutes: string[] = [
-    "/",
-    
-]
-
-/**
- * An Array of routes that are accessible to the public
- * Routes that start with this (/api/auth) prefix do not require authentication
- * @type {string[]}
- */
-
-export const authRoutes: string[] = [
-    "/auth/sign-in",   // Added leading slash
-   
-]
-
-/**
- * An Array of routes that are accessible to the public
- * Routes that start with this (/api/auth) prefix do not require authentication
- * @type {string}
- */
-
-export const apiAuthPrefix: string = "/api/auth"
+/** API auth routes skip middleware JWT checks; handlers validate themselves. */
+export const apiAuthPrefix = "/api/auth";
 
 export const DEFAULT_LOGIN_REDIRECT = "/dashboard";

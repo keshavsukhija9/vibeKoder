@@ -1,5 +1,5 @@
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { AppNavbar } from "@/components/layout/app-navbar";
+import { AppNavbar } from "@/components/app-navbar";
 import { getAllPlaygroundForUser } from "@/modules/dashboard/actions";
 import { DashboardSidebar } from "@/modules/dashboard/components/dashboard-sidebar";
 

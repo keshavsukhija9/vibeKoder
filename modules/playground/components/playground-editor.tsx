@@ -1,7 +1,7 @@
 "use client"
 
 import dynamic from "next/dynamic"
-import { useRef, useEffect, useCallback } from "react"
+import { useRef, useEffect, useCallback, useState } from "react"
 import { TemplateFile } from "../lib/path-to-json"
 import { configureMonaco, defaultEditorOptions, getEditorLanguage } from "../lib/editor-config"
 
@@ -56,93 +56,100 @@ export const PlaygroundEditor = ({
   const suggestionAcceptedRef = useRef(false)
   const suggestionTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const tabCommandRef = useRef<any>(null)
+  const suggestionRef = useRef(suggestion)
+  const suggestionPositionRef = useRef(suggestionPosition)
+  const activeFileRef = useRef(activeFile)
+  const [mountedEditor, setMountedEditor] = useState<{ editor: any; monaco: Monaco } | null>(null)
+
+  useEffect(() => {
+    suggestionRef.current = suggestion
+    suggestionPositionRef.current = suggestionPosition
+  }, [suggestion, suggestionPosition])
+  useEffect(() => {
+    activeFileRef.current = activeFile
+  }, [activeFile])
 
   // Generate unique ID for each suggestion
   const generateSuggestionId = () => `suggestion-${Date.now()}-${Math.random()}`
 
-  // Create inline completion provider
-  const createInlineCompletionProvider = useCallback(
-    (monaco: Monaco) => {
-      return {
-        provideInlineCompletions: async (model: any, position: any, context: any, token: any) => {
-          console.log("provideInlineCompletions called", {
-            hasSuggestion: !!suggestion,
-            hasPosition: !!suggestionPosition,
-            currentPos: `${position.lineNumber}:${position.column}`,
-            suggestionPos: suggestionPosition ? `${suggestionPosition.line}:${suggestionPosition.column}` : null,
-            isAccepting: isAcceptingSuggestionRef.current,
-            suggestionAccepted: suggestionAcceptedRef.current,
+  // Create inline completion provider (reads from refs so it stays stable)
+  const createInlineCompletionProvider = useCallback((monaco: Monaco) => {
+    return {
+      provideInlineCompletions: async (model: any, position: any, context: any, token: any) => {
+        const currentSuggestion = suggestionRef.current
+        const currentPosition = suggestionPositionRef.current
+        console.log("provideInlineCompletions called", {
+          hasSuggestion: !!currentSuggestion,
+          hasPosition: !!currentPosition,
+          currentPos: `${position.lineNumber}:${position.column}`,
+          suggestionPos: currentPosition ? `${currentPosition.line}:${currentPosition.column}` : null,
+          isAccepting: isAcceptingSuggestionRef.current,
+          suggestionAccepted: suggestionAcceptedRef.current,
+        })
+
+        if (isAcceptingSuggestionRef.current || suggestionAcceptedRef.current) {
+          console.log("Skipping completion - already accepting or accepted")
+          return { items: [] }
+        }
+
+        if (!currentSuggestion || !currentPosition) {
+          console.log("No suggestion or position available")
+          return { items: [] }
+        }
+
+        const currentLine = position.lineNumber
+        const currentColumn = position.column
+        const isPositionMatch =
+          currentLine === currentPosition.line &&
+          currentColumn >= currentPosition.column &&
+          currentColumn <= currentPosition.column + 2
+
+        if (!isPositionMatch) {
+          console.log("Position mismatch", {
+            current: `${currentLine}:${currentColumn}`,
+            expected: `${currentPosition.line}:${currentPosition.column}`,
           })
+          return { items: [] }
+        }
 
-          // Don't provide completions if we're currently accepting or have already accepted
-          if (isAcceptingSuggestionRef.current || suggestionAcceptedRef.current) {
-            console.log("Skipping completion - already accepting or accepted")
-            return { items: [] }
-          }
+        const suggestionId = generateSuggestionId()
+        currentSuggestionRef.current = {
+          text: currentSuggestion,
+          position: currentPosition,
+          id: suggestionId,
+        }
 
-          // Only provide suggestion if we have one
-          if (!suggestion || !suggestionPosition) {
-            console.log("No suggestion or position available")
-            return { items: [] }
-          }
+        console.log("Providing inline completion", { suggestionId, suggestion: currentSuggestion.substring(0, 50) + "..." })
 
-          // Check if current position matches suggestion position (with some tolerance)
-          const currentLine = position.lineNumber
-          const currentColumn = position.column
+        const cleanSuggestion = currentSuggestion.replace(/\r/g, "")
 
-          const isPositionMatch =
-            currentLine === suggestionPosition.line &&
-            currentColumn >= suggestionPosition.column &&
-            currentColumn <= suggestionPosition.column + 2 // Small tolerance
+        return {
+          items: [
+            {
+              insertText: cleanSuggestion,
+              range: new monaco.Range(
+                currentPosition.line,
+                currentPosition.column,
+                currentPosition.line,
+                currentPosition.column,
+              ),
+              kind: monaco.languages.CompletionItemKind.Snippet,
+              label: "AI Suggestion",
+              detail: "AI-generated code suggestion",
+              documentation: "Press Tab to accept",
+              sortText: "0000",
+              filterText: "",
+              insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+            },
+          ],
+        }
+      },
+      freeInlineCompletions: (completions: any) => {
+        console.log("freeInlineCompletions called")
+      },
+    }
+  }, [])
 
-          if (!isPositionMatch) {
-            console.log("Position mismatch", {
-              current: `${currentLine}:${currentColumn}`,
-              expected: `${suggestionPosition.line}:${suggestionPosition.column}`,
-            })
-            return { items: [] }
-          }
-
-          const suggestionId = generateSuggestionId()
-          currentSuggestionRef.current = {
-            text: suggestion,
-            position: suggestionPosition,
-            id: suggestionId,
-          }
-
-          console.log("Providing inline completion", { suggestionId, suggestion: suggestion.substring(0, 50) + "..." })
-
-          // Clean the suggestion text (remove \r characters)
-          const cleanSuggestion = suggestion.replace(/\r/g, "")
-
-          return {
-            items: [
-              {
-                insertText: cleanSuggestion,
-                range: new monaco.Range(
-                  suggestionPosition.line,
-                  suggestionPosition.column,
-                  suggestionPosition.line,
-                  suggestionPosition.column,
-                ),
-                kind: monaco.languages.CompletionItemKind.Snippet,
-                label: "AI Suggestion",
-                detail: "AI-generated code suggestion",
-                documentation: "Press Tab to accept",
-                sortText: "0000", // High priority
-                filterText: "",
-                insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-              },
-            ],
-          }
-        },
-        freeInlineCompletions: (completions: any) => {
-          console.log("freeInlineCompletions called")
-        },
-      }
-    },
-    [suggestion, suggestionPosition],
-  )
 
   // Clear current suggestion
   const clearCurrentSuggestion = useCallback(() => {
@@ -267,52 +274,15 @@ export const PlaygroundEditor = ({
     )
   }, [])
 
-  // Update inline completions when suggestion changes
+  // Register inline completion provider once when editor/monaco are available (reads from suggestionRef)
   useEffect(() => {
-    if (!editorRef.current || !monacoRef.current) return
+    if (!mountedEditor) return
+    const { monaco } = mountedEditor
 
-    const editor = editorRef.current
-    const monaco = monacoRef.current
-
-    console.log("Suggestion changed", {
-      hasSuggestion: !!suggestion,
-      hasPosition: !!suggestionPosition,
-      isAccepting: isAcceptingSuggestionRef.current,
-      suggestionAccepted: suggestionAcceptedRef.current,
-    })
-
-    // Don't update if we're in the middle of accepting a suggestion
-    if (isAcceptingSuggestionRef.current || suggestionAcceptedRef.current) {
-      console.log("Skipping update - currently accepting/accepted suggestion")
-      return
-    }
-
-    // Dispose previous provider
-    if (inlineCompletionProviderRef.current) {
-      inlineCompletionProviderRef.current.dispose()
-      inlineCompletionProviderRef.current = null
-    }
-
-    // Clear current suggestion reference
-    currentSuggestionRef.current = null
-
-    // Register new provider if we have a suggestion
-    if (suggestion && suggestionPosition) {
-      console.log("Registering new inline completion provider")
-
-      const language = getEditorLanguage(activeFile?.fileExtension || "")
-      const provider = createInlineCompletionProvider(monaco)
-
-      inlineCompletionProviderRef.current = monaco.languages.registerInlineCompletionsProvider(language, provider)
-
-      // Small delay to ensure editor is ready, then trigger suggestions
-      setTimeout(() => {
-        if (editorRef.current && !isAcceptingSuggestionRef.current && !suggestionAcceptedRef.current) {
-          console.log("Triggering inline suggestions")
-          editor.trigger("ai", "editor.action.inlineSuggest.trigger", null)
-        }
-      }, 50)
-    }
+    const language = getEditorLanguage(activeFileRef.current?.fileExtension || "")
+    const provider = createInlineCompletionProvider(monaco)
+    inlineCompletionProviderRef.current = monaco.languages.registerInlineCompletionsProvider(language, provider)
+    console.log("Registering new inline completion provider")
 
     return () => {
       if (inlineCompletionProviderRef.current) {
@@ -320,11 +290,23 @@ export const PlaygroundEditor = ({
         inlineCompletionProviderRef.current = null
       }
     }
-  }, [suggestion, suggestionPosition, activeFile, createInlineCompletionProvider])
+  }, [mountedEditor])
+
+  // Trigger inline suggestions when suggestion/position update (no re-registration)
+  useEffect(() => {
+    if (!suggestion || !suggestionPosition || !editorRef.current || isAcceptingSuggestionRef.current || suggestionAcceptedRef.current) return
+    const editor = editorRef.current
+    setTimeout(() => {
+      if (editorRef.current && !isAcceptingSuggestionRef.current && !suggestionAcceptedRef.current) {
+        editor.trigger("ai", "editor.action.inlineSuggest.trigger", null)
+      }
+    }, 50)
+  }, [suggestion, suggestionPosition])
 
   const handleEditorDidMount = (editor: any, monaco: Monaco) => {
     editorRef.current = editor
     monacoRef.current = monaco
+    setMountedEditor({ editor, monaco })
     console.log("Editor instance mounted:", !!editorRef.current)
 
     editor.updateOptions({
@@ -356,7 +338,7 @@ export const PlaygroundEditor = ({
     if (onCursorChange) {
       const pos = editor.getPosition()
       if (pos) onCursorChange(pos.lineNumber, pos.column)
-      editor.onDidChangeCursorPosition((e) => {
+      editor.onDidChangeCursorPosition((e: { position: { lineNumber: number; column: number } }) => {
         onCursorChange(e.position.lineNumber, e.position.column)
       })
     }
@@ -368,7 +350,7 @@ export const PlaygroundEditor = ({
     })
 
     // CRITICAL: Override Tab key with high priority and prevent default Monaco behavior
-    if (tabCommandRef.current) {
+    if (tabCommandRef.current && typeof tabCommandRef.current.dispose === "function") {
       tabCommandRef.current.dispose()
     }
 
@@ -535,7 +517,7 @@ export const PlaygroundEditor = ({
         inlineCompletionProviderRef.current.dispose()
         inlineCompletionProviderRef.current = null
       }
-      if (tabCommandRef.current) {
+      if (tabCommandRef.current && typeof tabCommandRef.current.dispose === "function") {
         tabCommandRef.current.dispose()
         tabCommandRef.current = null
       }

@@ -8,7 +8,7 @@ export default function AuthLayout({
 }) {
   return (
     <main
-      className="flex min-h-screen flex-col items-center justify-center gap-8 bg-[var(--vibe-bg)] p-4"
+      className="flex min-h-screen flex-col items-center justify-center gap-8 bg-[var(--background)] p-4 pt-20"
       style={{ fontFamily: "var(--font-body)" }}
       role="main"
     >

@@ -2,15 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { verifyPassword } from "@/lib/auth/password";
 import { signToken, getCookieName } from "@/lib/auth/jwt";
+import { readJsonBody } from "@/lib/api-errors";
+import { isValidEmail } from "@/lib/validation";
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const parsed = await readJsonBody<{ email?: string; password?: string }>(req);
+    if (parsed.errorResponse) return parsed.errorResponse;
+    const body = parsed.body;
     const email = typeof body.email === "string" ? body.email.trim() : "";
     const password = typeof body.password === "string" ? body.password : "";
 
     if (!email || !password) {
       return NextResponse.json({ error: "Email and password required" }, { status: 400 });
+    }
+    if (!isValidEmail(email)) {
+      return NextResponse.json({ error: "Invalid email address" }, { status: 400 });
     }
 
     const db = getDb();

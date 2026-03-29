@@ -227,14 +227,31 @@ export const AIChatSidePanel: React.FC<AIChatSidePanelProps> = ({
         });
       } else {
         setStreamingContent(null);
+        const ollamaHint =
+          "Ensure Ollama is running (ollama serve) and install a model: ollama pull codellama";
+        let errorContent: string;
+        try {
+          const errBody = (await response.json()) as { message?: string; error?: string };
+          errorContent = errBody.message ?? errBody.error ?? "Request failed.";
+          if (
+            (response.status === 500 || response.status === 502) &&
+            !errorContent.toLowerCase().includes("ollama")
+          ) {
+            errorContent += ` ${ollamaHint}`;
+          }
+        } catch {
+          errorContent =
+            response.status === 502 || response.status === 503
+              ? `Service unavailable. ${ollamaHint}`
+              : "Sorry, I encountered an error while processing your request. Please try again.";
+        }
         setMessages((prev) => {
           const withoutPlaceholder = prev.slice(0, -1);
           return [
             ...withoutPlaceholder,
             {
               role: "assistant",
-              content:
-                "Sorry, I encountered an error while processing your request. Please try again.",
+              content: errorContent,
               timestamp: new Date(),
               id: Date.now().toString(),
             },
@@ -244,14 +261,18 @@ export const AIChatSidePanel: React.FC<AIChatSidePanelProps> = ({
     } catch (error) {
       console.error("Error sending message:", error);
       setStreamingContent(null);
+      const ollamaHint =
+        "Ensure Ollama is running (ollama serve) and install a model: ollama pull codellama";
+      const errMsg =
+        error instanceof Error ? error.message : "Connection failed.";
+      const errorContent = errMsg.includes("Ollama") ? errMsg : `${errMsg} ${ollamaHint}`;
       setMessages((prev) => {
         const withoutPlaceholder = prev.slice(0, -1);
         return [
           ...withoutPlaceholder,
           {
             role: "assistant",
-            content:
-              "I'm having trouble connecting right now. Please check your internet connection and try again.",
+            content: errorContent,
             timestamp: new Date(),
             id: Date.now().toString(),
           },
@@ -314,7 +335,7 @@ export const AIChatSidePanel: React.FC<AIChatSidePanelProps> = ({
                         <div className="flex items-center justify-between p-6">
                             <div className="flex items-center gap-3">
                                 <div className="relative w-10 h-10 border rounded-full flex flex-col justify-center items-center">
-                                    <Image src={"/logo.svg"} alt="Logo" width={28} height={28} />
+                                    <Image src={"/logo.svg"} alt="Logo" width={28} height={28} style={{ height: "auto" }} />
                                 </div>
                                 <div>
                                     <h2 className="text-lg font-semibold text-zinc-100">
@@ -541,10 +562,15 @@ export const AIChatSidePanel: React.FC<AIChatSidePanelProps> = ({
                                                         remarkPlugins={[remarkGfm, remarkMath]}
                                                         rehypePlugins={[rehypeKatex]}
                                                         components={{
-                                                            code: ({ children, className, inline }) => {
+                                                            p: ({ children }) => (
+                                                                <div className="mb-2 last:mb-0">{children}</div>
+                                                            ),
+                                                            code(props) {
+                                                                const { node: _node, className, children, ...rest } = props;
+                                                                const inline = "inline" in props && Boolean((props as { inline?: boolean }).inline);
                                                                 if (inline) {
                                                                     return (
-                                                                        <code className="bg-zinc-800 px-1 py-0.5 rounded text-sm">
+                                                                        <code className="bg-zinc-800 px-1 py-0.5 rounded text-sm" {...rest}>
                                                                             {children}
                                                                         </code>
                                                                     );
@@ -552,7 +578,7 @@ export const AIChatSidePanel: React.FC<AIChatSidePanelProps> = ({
                                                                 return (
                                                                     <div className="bg-zinc-800 rounded-lg p-4 my-4">
                                                                         <pre className="text-sm text-zinc-100 overflow-x-auto">
-                                                                            <code className={className}>{children}</code>
+                                                                            <code className={className} {...rest}>{children}</code>
                                                                         </pre>
                                                                     </div>
                                                                 );

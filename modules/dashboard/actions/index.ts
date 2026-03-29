@@ -107,9 +107,9 @@ export const createPlayground = async (data: {
   }
 };
 
-export const deleteProjectById = async (id: string) => {
+export const deleteProjectById = async (id: string): Promise<void> => {
   const user = await currentUser();
-  if (!user) return null;
+  if (!user) return;
 
   const db = getDb();
   try {
@@ -126,9 +126,9 @@ export const deleteProjectById = async (id: string) => {
 export const editProjectById = async (
   id: string,
   data: { title: string; description: string }
-) => {
+): Promise<void> => {
   const user = await currentUser();
-  if (!user) return null;
+  if (!user) return;
 
   const db = getDb();
   try {
@@ -141,9 +141,9 @@ export const editProjectById = async (
   }
 };
 
-export const duplicateProjectById = async (id: string) => {
+export const duplicateProjectById = async (id: string): Promise<void> => {
   const user = await currentUser();
-  if (!user) return null;
+  if (!user) return;
 
   const db = getDb();
   try {
@@ -165,13 +165,8 @@ export const duplicateProjectById = async (id: string) => {
       original.template,
       original.user_id
     );
-    const duplicated = db.prepare(
-      "SELECT id, title, description, template, created_at, updated_at, user_id FROM playgrounds WHERE id = ?"
-    ).get(newId) as any;
     revalidatePath("/dashboard");
-    return duplicated;
   } catch (error) {
     console.error("Error duplicating project:", error);
-    return undefined;
   }
 };

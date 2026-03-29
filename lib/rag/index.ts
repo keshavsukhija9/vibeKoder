@@ -7,7 +7,8 @@
  * - Persist to disk (serverless mode) per FR-RAG-06
  */
 
-import type { RAGCodebaseContext, RAGSearchResult } from "./types";
+/* eslint-disable @typescript-eslint/no-unused-vars -- stub API signatures for future implementation */
+import type { RAGCodebaseContext } from "./types";
 
 /**
  * Stub: returns empty codebase context until RAG is implemented.

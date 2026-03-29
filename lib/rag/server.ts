@@ -6,7 +6,7 @@
 import path from "path";
 import { createHash } from "crypto";
 import fs from "fs";
-import { chunkFiles, type ChunkResult } from "./chunk";
+import { chunkFiles } from "./chunk";
 import { getEmbeddings } from "./embed";
 import type { RAGSearchResult } from "./types";
 
@@ -141,7 +141,7 @@ export async function searchCodebase(
   query: string,
   topK = DEFAULT_TOP_K
 ): Promise<RAGSearchResult[]> {
-  const lancedb = await import("@lancedb/lancedb");
+  await import("@lancedb/lancedb");
   const db = await getDb();
   let table;
   try {

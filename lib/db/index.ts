@@ -1,4 +1,5 @@
 import Database from "better-sqlite3";
+import fs from "fs";
 import path from "path";
 import { getAllCreateStatements } from "./schema";
 
@@ -18,7 +19,6 @@ export function getDb(): Database.Database {
     const dbPath = getDbPath();
     const dir = path.dirname(dbPath);
     try {
-      const fs = require("fs");
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
       }

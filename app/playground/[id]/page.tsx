@@ -68,7 +68,6 @@ import { useParams } from "next/navigation";
 import React, {
   useCallback,
   useEffect,
-  useReducer,
   useRef,
   useState,
 } from "react";
@@ -116,11 +115,14 @@ const MainPlaygroundPage = () => {
     error: containerError,
     instance,
     writeFileSync,
-    // @ts-ignore
+    // @ts-expect-error - useWebContainer return type omits internal fields
   } = useWebContainer({ templateData });
 
   const lastSyncedContent = useRef<Map<string, string>>(new Map());
   const hasAutoOpenedRef = useRef(false);
+
+  const [explorerOpen, setExplorerOpen] = useState(true);
+  const [cursorPosition, setCursorPosition] = useState({ line: 1, column: 1 });
 
   useEffect(() => {
     setPlaygroundId(id);
@@ -215,14 +217,17 @@ const MainPlaygroundPage = () => {
     return { valid: true };
   }
 
-  async function persistTemplate(payload: TemplateFolder): Promise<{ ok: boolean; error?: string; data?: TemplateFolder }> {
-    try {
-      const data = await saveTemplateData(payload);
-      return { ok: true, data: data ?? payload };
-    } catch (err) {
-      return { ok: false, error: err instanceof Error ? err.message : String(err) };
-    }
-  }
+  const persistTemplate = useCallback(
+    async (payload: TemplateFolder): Promise<{ ok: boolean; error?: string; data?: TemplateFolder }> => {
+      try {
+        const data = await saveTemplateData(payload);
+        return { ok: true, data: data ?? payload };
+      } catch (err) {
+        return { ok: false, error: err instanceof Error ? err.message : String(err) };
+      }
+    },
+    [saveTemplateData]
+  );
 
   function handleSaveError(err: unknown): void {
     console.error("Error saving file:", err);
@@ -243,12 +248,15 @@ const MainPlaygroundPage = () => {
     return updated;
   }
 
-  async function syncFileToWebContainer(filePath: string, fileToSave: OpenFile): Promise<void> {
-    if (!writeFileSync) return;
-    await writeFileSync(filePath, fileToSave.content);
-    lastSyncedContent.current.set(fileToSave.id, fileToSave.content);
-    if (instance?.fs) await instance.fs.writeFile(filePath, fileToSave.content);
-  }
+  const syncFileToWebContainer = useCallback(
+    async (filePath: string, fileToSave: OpenFile): Promise<void> => {
+      if (!writeFileSync) return;
+      await writeFileSync(filePath, fileToSave.content);
+      lastSyncedContent.current.set(fileToSave.id, fileToSave.content);
+      if (instance?.fs) await instance.fs.writeFile(filePath, fileToSave.content);
+    },
+    [writeFileSync, instance]
+  );
 
   const handleFileSelect = (file: TemplateFile) => {
     openFile(file);
@@ -276,11 +284,10 @@ const MainPlaygroundPage = () => {
     [
       activeFileId,
       openFiles,
-      writeFileSync,
-      instance,
-      saveTemplateData,
       setTemplateData,
       setOpenFiles,
+      persistTemplate,
+      syncFileToWebContainer,
     ]
   );
 
@@ -295,7 +302,7 @@ const MainPlaygroundPage = () => {
     try {
       await Promise.all(unsavedFiles.map((f) => handleSave(f.id)));
       toast.success(`Saved ${unsavedFiles.length} file(s)`);
-    } catch (error) {
+    } catch {
       toast.error("Failed to save some files");
     }
   };
@@ -357,13 +364,6 @@ const MainPlaygroundPage = () => {
      return () => window.removeEventListener("keydown", handleKeyDown);
   },[handleSave]);
 
-  if (error) return <PlaygroundErrorView error={error} />;
-  if (isLoading) return <PlaygroundLoadingView />;
-  if (!templateData) return <PlaygroundNoTemplateView />;
-
-  const [explorerOpen, setExplorerOpen] = useState(true);
-  const [cursorPosition, setCursorPosition] = useState({ line: 1, column: 1 });
-
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "b") {
@@ -375,8 +375,12 @@ const MainPlaygroundPage = () => {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
+  if (error) return <PlaygroundErrorView error={error} />;
+  if (isLoading) return <PlaygroundLoadingView />;
+  if (!templateData) return <PlaygroundNoTemplateView />;
+
   return (
-    <TooltipProvider>
+    <TooltipProvider delayDuration={0}>
       <div className="flex min-h-[calc(100vh-0px)] w-full bg-[var(--vibe-bg)]">
         <ActivityBar
           explorerActive={explorerOpen}
@@ -442,7 +446,7 @@ const MainPlaygroundPage = () => {
 
               <div className="flex items-center gap-1">
                 <Tooltip>
-                  <TooltipTrigger>
+                  <TooltipTrigger asChild>
                     <Button
                       size="sm"
                       variant="outline"

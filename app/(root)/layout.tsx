@@ -14,7 +14,7 @@ export default function RootLayout({
 }) {
   return (
     <LandingProviders>
-      <main className="relative min-h-screen bg-[var(--vibe-bg)]">{children}</main>
+      <main className="relative min-h-screen bg-[var(--background)] pt-14">{children}</main>
     </LandingProviders>
   );
 }

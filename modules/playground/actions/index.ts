@@ -5,11 +5,14 @@ import { TemplateFolder } from "../lib/path-to-json";
 import { currentUser } from "@/modules/auth/actions";
 
 export const getPlaygroundById = async (id: string) => {
+  const user = await currentUser();
+  if (!user) return null;
+
   const db = getDb();
   try {
     const row = db.prepare(
-      "SELECT id, title FROM playgrounds WHERE id = ?"
-    ).get(id) as { id: string; title: string } | undefined;
+      "SELECT id, title FROM playgrounds WHERE id = ? AND user_id = ?"
+    ).get(id, user.id) as { id: string; title: string } | undefined;
 
     if (!row) return null;
 

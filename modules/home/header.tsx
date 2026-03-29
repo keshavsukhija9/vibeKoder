@@ -37,8 +37,9 @@ export function Header() {
                     <Image
                       src={"/logo.svg"}
                       alt="Logo"
-                      height={60}
                       width={60}
+                      height={60}
+                      style={{ height: "auto" }}
                     />
 
                     <span className="hidden sm:block font-extrabold text-lg">

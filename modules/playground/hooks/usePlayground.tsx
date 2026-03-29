@@ -53,9 +53,14 @@ export const usePlayground = (id: string): UsePlaygroundReturn => {
 
       const data = await getPlaygroundById(id);
 
-      //   @ts-ignore
+      if (!data) {
+        setError("Playground not found or sign-in required");
+        toast.error("Playground not found or sign-in required");
+        return;
+      }
+
       setPlaygroundData(data);
-      const rawContent = data?.templateFiles?.[0]?.content;
+      const rawContent = data.templateFiles?.[0]?.content;
 
       if (typeof rawContent === "string") {
         const parsedContent = JSON.parse(rawContent);

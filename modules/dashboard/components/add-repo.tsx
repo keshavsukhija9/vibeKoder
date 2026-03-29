@@ -6,17 +6,18 @@ import Image from "next/image"
 const AddRepo = () => {
   return (
     <div
-      className="group px-6 py-6 flex flex-row justify-between items-center rounded-2xl border border-[var(--vibe-border)] bg-[var(--vibe-surface)] cursor-pointer
-      transition-all duration-300 ease-in-out shadow-[var(--vibe-shadow)]
+      className="group px-6 py-6 flex flex-row justify-between items-center rounded-2xl border border-[var(--vibe-border)] bg-[var(--vibe-surface)]
+      transition-[border-color,box-shadow,transform] duration-200 ease-out shadow-[var(--vibe-shadow)]
       hover:border-[var(--vibe-primary)]/40 hover:scale-[1.02] hover:shadow-[var(--vibe-shadow-hover)]"
     >
       <div className="flex flex-row justify-center items-start gap-4">
         <Button
+          type="button"
           variant="outline"
-          className="flex justify-center items-center bg-white border-[var(--vibe-border)] group-hover:border-[var(--vibe-primary)] group-hover:text-[var(--vibe-primary)] transition-colors duration-300"
+          className="flex justify-center items-center bg-white border-[var(--vibe-border)] group-hover:border-[var(--vibe-primary)] group-hover:text-[var(--vibe-primary)] transition-colors duration-150"
           size="icon"
         >
-          <ArrowDown size={30} className="transition-transform duration-300 group-hover:translate-y-1" />
+          <ArrowDown size={30} className="transition-transform duration-200 group-hover:translate-y-1" />
         </Button>
         <div className="flex flex-col">
           <h1 className="text-xl font-bold text-[var(--vibe-text)]" style={{ fontFamily: "var(--font-display)" }}>Open Github Repository</h1>
@@ -31,6 +32,7 @@ const AddRepo = () => {
           width={150}
           height={150}
           className="transition-transform duration-300 group-hover:scale-110"
+          style={{ height: "auto" }}
         />
       </div>
     </div>

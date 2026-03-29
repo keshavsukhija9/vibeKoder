@@ -9,7 +9,7 @@ import React from "react";
 const Page = async () => {
   const playgrounds = await getAllPlaygroundForUser();
   return (
-    <div className="flex flex-col items-start min-h-screen mx-auto w-full max-w-[1280px] px-4 py-10" style={{ fontFamily: "var(--font-body)" }}>
+    <div className="flex flex-col items-start min-h-screen mx-auto w-full max-w-[1280px] px-4 pt-6 pb-10" style={{ fontFamily: "var(--font-body)" }}>
       <div className="w-full mb-8 rounded-2xl border border-[var(--vibe-border)] bg-[var(--vibe-surface)] p-4 shadow-[var(--vibe-shadow)]">
         <p className="text-sm text-[var(--vibe-text-muted)] mb-2">Want to code right away?</p>
         <Link

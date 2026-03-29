@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
+import { AppNavbar } from "@/components/app-navbar";
 import { ThemeProvider } from "@/components/providers/theme-providers";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -38,10 +39,9 @@ export default async function RootLayout({
             disableTransitionOnChange
           >
             <div className="flex flex-col min-h-screen">
-              <Toaster/>
-    <div className="flex-1">
-{children}
-    </div>
+              <Toaster />
+              <AppNavbar />
+              <div className="flex-1">{children}</div>
             </div>
         
         </ThemeProvider>
