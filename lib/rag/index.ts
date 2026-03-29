@@ -1,46 +1,54 @@
 /**
- * VibeCoder RAG module – PRD §5.2 (Local RAG Pipeline), §7.2 (LanceDB)
- *
- * Placeholder implementation. When LanceDB (or another vector store) is integrated:
- * - Implement index() / update() / remove() with chunking and embedding
- * - Implement search() with vector similarity, target < 100ms for 10k-file repos
- * - Persist to disk (serverless mode) per FR-RAG-06
+ * VibeCoder RAG – LanceDB-backed indexing and search (`lib/rag/server.ts`).
+ * API routes may import from `@/lib/rag/server` or this barrel (server-only).
  */
 
-/* eslint-disable @typescript-eslint/no-unused-vars -- stub API signatures for future implementation */
+export type {
+  CodeChunk,
+  RAGSearchResult,
+  RAGCodebaseContext,
+  RAGIndexOptions,
+  RAGIndexer,
+  RAGRetriever,
+} from "./types";
+
+export { playgroundScopeKey, playgroundTableName, playgroundHashesPath } from "./playground-scope";
+export { requirePlaygroundForRag } from "./require-playground";
+
+export {
+  hashContent,
+  tableExists,
+  indexFiles,
+  searchCodebase,
+  updateFileInIndex,
+  type LanceDbRow,
+} from "./server";
+
 import type { RAGCodebaseContext } from "./types";
+import { indexFiles, searchCodebase } from "./server";
 
-/**
- * Stub: returns empty codebase context until RAG is implemented.
- * The code-completion and chat APIs accept codebaseContext and inject it into prompts.
- */
+/** Retrieve chunks for a query (e.g. to build LLM context). */
 export async function getCodebaseContext(
-  _query: string,
-  _options?: { topK?: number }
+  playgroundId: string,
+  query: string,
+  options?: { topK?: number }
 ): Promise<RAGCodebaseContext> {
+  const topK = options?.topK ?? 6;
+  const start = Date.now();
+  const chunks = await searchCodebase(playgroundId, query, topK);
   return {
-    chunks: [],
-    metadata: { totalChunks: 0 },
+    chunks,
+    metadata: {
+      totalChunks: chunks.length,
+      retrievalMs: Date.now() - start,
+    },
   };
 }
 
-/**
- * Stub: build or update index from file list (for future use by playground/worker).
- */
+/** Full re-index from a file list (alias for `indexFiles`). */
 export async function indexCodebase(
-  _files: { path: string; content: string }[]
-): Promise<void> {
-  // TODO: chunk files, embed, write to LanceDB (lib/rag/backend or worker)
+  playgroundId: string,
+  files: { path: string; content: string }[]
+): ReturnType<typeof indexFiles> {
+  return indexFiles(playgroundId, files);
 }
-
-/**
- * Stub: incremental update when a file changes (FR-RAG-05).
- */
-export async function updateFileInIndex(
-  _path: string,
-  _content: string
-): Promise<void> {
-  // TODO: re-chunk and update vector store
-}
-
-export type { RAGCodebaseContext, RAGSearchResult, CodeChunk } from "./types";

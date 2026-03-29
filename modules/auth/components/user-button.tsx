@@ -16,10 +16,9 @@ import { useCurrentUser } from "../hooks/use-current-user";
 
 const UserButton = () => {
 
-  const user = useCurrentUser();
-  const displayName = user?.name ?? user?.email ?? "User";
+  const { user, ready } = useCurrentUser();
 
-  if (!user) return null;
+  if (!ready || !user) return null;
 
   return (
     <DropdownMenu>

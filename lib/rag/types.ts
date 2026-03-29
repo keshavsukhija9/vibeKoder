@@ -1,8 +1,7 @@
 /**
  * VibeCoder RAG (Retrieval-Augmented Generation) – PRD §5.2, §7.2
  *
- * Types for local codebase indexing and retrieval using LanceDB.
- * Implementation is planned; these types define the contract for the RAG pipeline.
+ * Types for local codebase indexing and retrieval using LanceDB (`lib/rag/server.ts`).
  */
 
 export interface CodeChunk {

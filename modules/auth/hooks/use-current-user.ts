@@ -8,6 +8,7 @@ export type AuthUser = {
 
 export const useCurrentUser = () => {
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     fetch("/api/auth/me")
@@ -15,8 +16,9 @@ export const useCurrentUser = () => {
       .then((data) => {
         setUser(data.user ?? null);
       })
-      .catch(() => setUser(null));
+      .catch(() => setUser(null))
+      .finally(() => setReady(true));
   }, []);
 
-  return user;
+  return { user, ready };
 };

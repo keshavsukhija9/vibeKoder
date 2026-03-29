@@ -2,7 +2,7 @@
 
 ![VibeCoder Thumbnail](public/vibe-code-editor-thumbnaail.svg)
 
-**VibeCoder** is a browser-native IDE that fuses local code execution with on-device Large Language Model (LLM) assistance. Built as a privacy-first, high-performance alternative to cloud-dependent AI coding tools, it runs entirely in the browser using **StackBlitz WebContainers**, **Monaco Editor**, and **local LLMs (Ollama)**. The roadmap includes **LanceDB** for codebase-aware RAG and **AST-based code intelligence** — see the [PRD](docs/PRD-VibeCoder.md) for full scope.
+**VibeCoder** is a browser-native IDE that fuses local code execution with on-device Large Language Model (LLM) assistance. Built as a privacy-first, high-performance alternative to cloud-dependent AI coding tools, it runs in the browser using **StackBlitz WebContainers**, **Monaco Editor**, **local LLMs (Ollama)**, **LanceDB** for per-project codebase RAG, and **AST analysis** for structure checks — see the [PRD](docs/PRD-VibeCoder.md) for full scope.
 
 ---
 
@@ -31,7 +31,7 @@
 | Animations         | Framer Motion           | Transitions and feedback (PRD)   |
 | Local runtime      | StackBlitz WebContainers| Node.js (and Python roadmap)     |
 | AI / LLM           | Ollama (local)          | Code completion and chat        |
-| Vector / RAG       | LanceDB (roadmap)       | Codebase-aware context           |
+| Vector / RAG       | LanceDB                 | Per-playground codebase context   |
 | Terminal           | xterm.js                | In-browser shell                 |
 | Persistence        | SQLite                  | Projects, users, and auth        |
 
@@ -42,9 +42,9 @@
 ### 1. Clone the Repo
 
 ```bash
-git clone https://github.com/your-username/vibecode-editor.git
-cd vibecode-editor
-````
+git clone https://github.com/keshavsukhija9/vibeKoder.git
+cd vibeKoder
+```
 
 ### 2. Install Dependencies
 
