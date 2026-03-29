@@ -152,7 +152,6 @@ async function processDirectory(
       if (entry.isDirectory()) {
         // Skip ignored folders
         if (options.ignoreFolders?.includes(entryName)) {
-          console.log(`Skipping ignored folder: ${entryPath}`);
           continue;
         }
         
@@ -162,14 +161,12 @@ async function processDirectory(
       } else if (entry.isFile()) {
         // Skip ignored files
         if (options.ignoreFiles?.includes(entryName)) {
-          console.log(`Skipping ignored file: ${entryPath}`);
           continue;
         }
         
         // Check against regex patterns
         const shouldSkip = options.ignorePatterns?.some(pattern => pattern.test(entryName));
         if (shouldSkip) {
-          console.log(`Skipping file matching ignore pattern: ${entryPath}`);
           continue;
         }
         
@@ -237,15 +234,12 @@ export async function saveTemplateStructureToJson(
     await fs.promises.mkdir(outputDir, { recursive: true });
     
     // Write the JSON file
-    const data = await fs.promises.writeFile(
-      outputPath, 
+    await fs.promises.writeFile(
+      outputPath,
       JSON.stringify(templateStructure, null, 2),
-      'utf8'
+      "utf8"
     );
-    console.log(`Template structure saved to ${outputPath}`);
 
-
-    
   } catch (error) {
     throw new Error(`Error saving template structure: ${(error as Error).message}`);
   }
